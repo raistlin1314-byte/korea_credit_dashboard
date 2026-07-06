@@ -239,16 +239,22 @@ zChart.setOption({
   yAxis: [{ type: 'value', name: 'Z-score(3y)', position: 'left', nameTextStyle: { color: '#666', fontSize: 9 }, axisLine: { show: true, lineStyle: { color: '#666' } }, axisLabel: { color: '#666', fontSize: 9 }, splitLine: { lineStyle: { color: '#eee', type: 'dashed' } }, min: v => Math.min(-4, v.min * 1.1), max: v => Math.max(4, v.max * 1.1) }],
   dataZoom: [
     { type: 'inside', xAxisIndex: 0, start: 0, end: 100, zoomOnMouseWheel: true, moveOnMouseWheel: true },
-    { type: 'slider', xAxisIndex: 0, start: 0, end: 100, height: 20, bottom: 6, borderColor: '#ddd', fillerColor: 'rgba(26,26,46,0.08)', handleStyle: { color: '#1a1a2e' }, textStyle: { color: '#888', fontSize: 8 } }
+    { type: 'slider', xAxisIndex: 0, start: 0, end: 100, height: 25, bottom: 6, borderColor: '#ddd', fillerColor: 'rgba(26,26,46,0.08)', handleStyle: { color: '#1a1a2e' }, handleSize: 25, showDetail: true, brushSelect: false, showDataShadow: 'auto', textStyle: { color: '#888', fontSize: 8 } }
   ],
   series: buildZSeries()
 });
 
 function syncZoom(source, target) {
+  let pending = false;
   source.on('dataZoom', function() {
+    if (pending) return;
     const opt = source.getOption();
     const dz = opt.dataZoom.find(d => d.type === 'inside');
-    if (dz) target.dispatchAction({ type: 'dataZoom', start: dz.start, end: dz.end });
+    if (dz) {
+      pending = true;
+      target.dispatchAction({ type: 'dataZoom', start: dz.start, end: dz.end });
+      setTimeout(() => { pending = false; }, 50);
+    }
   });
 }
 syncZoom(mainChart, zChart); syncZoom(zChart, mainChart);
